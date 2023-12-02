@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,14 +8,14 @@ import java.util.stream.Collectors;
 public class Voo {
     private final String nome;
     private final String horario;
-    private final List<Passageiro> lista;
-    private final int listaMax;
-    private final List<Passageiro> fila;
-    private final int filaMax;
+    private List<Passageiro> lista;
+    private final int listaMax = 10;
+    private List<Passageiro> fila;
+    private final int filaMax = 5;
 
     private static int passagemCounter = 0;
 
-    private final Passageiro[] poltronas;
+    private Passageiro[] poltronas;
 
     public Voo(String nome, String horario) {
         this.nome = nome;
@@ -22,22 +23,15 @@ public class Voo {
         this.poltronas = new Passageiro[10];
         this.fila = new ArrayList<>();
         this.lista = new ArrayList<>();
-        this.filaMax = 5;
-        this.listaMax = 10;
-
         carregar();
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getHorario() {
-        return horario;
     }
 
     public int gerarPassagem() {
         return passagemCounter++;
+    }
+
+    public String getNome() {
+        return nome;
     }
 
     public void mostrarLista() {
@@ -91,63 +85,11 @@ public class Voo {
         return true;
     }
 
-    public void remover(Passageiro passageiro) {
-        if (lista.remove(passageiro) && !fila.isEmpty()) {
-            Passageiro passageiroFila = fila.remove(0);
-            passageiroFila.setPoltrona(passageiro.getPoltrona());
-            lista.add(passageiroFila);
-            poltronas[poltronaToIndex(passageiro.getPoltrona())] = passageiroFila;
-        }
-    }
-
-    public void salvar() {
-        try (
-            FileWriter fw = new FileWriter(nome+".txt");
-            BufferedWriter writer = new BufferedWriter(fw)
-        ){
-            List<String> arquivo = new ArrayList<>();
-            arquivo.addAll(
-                    lista.stream()
-                            .map(Passageiro::toCSV)
-                            .collect(Collectors.toList())
-            );
-            arquivo.addAll(
-                    fila.stream()
-                            .map(Passageiro::toCSV)
-                            .collect(Collectors.toList())
-            );
-
-            writer.write(String.join("\n", arquivo));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void carregar() {
-        try (
-                FileReader fr = new FileReader(nome+".txt");
-                BufferedReader reader = new BufferedReader(fr)
-        ){
-            List<Passageiro> arquivo = reader.lines()
-                    .map(Passageiro::new)
-                    .collect(Collectors.toList());
-
-            arquivo.stream()
-                    .max(Comparator.comparing(Passageiro::getPassagem))
-                    .ifPresent(maior -> setPassagemCounter(maior.getPassagem() + 1));
-
-            arquivo.forEach(p -> {
-                if (p.getPoltrona().equals("Espera")) {
-                    fila.add(p);
-                } else {
-                    lista.add(p);
-                    poltronas[poltronaToIndex(p.getPoltrona())] = p;
-                }
-            });
-        } catch (FileNotFoundException ignored) {
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private String indexToPoltrona(int index) {
+        if (index % 2 == 0) {
+            return (index/2) + "A";
+        } else {
+            return (index/2) + "B";
         }
     }
 
@@ -160,15 +102,78 @@ public class Voo {
         }
     }
 
-    private String indexToPoltrona(int index) {
-        if (index % 2 == 0) {
-            return (index/2) + "A";
-        } else {
-            return (index/2) + "B";
+    public void remover(Passageiro passageiro) {
+        if (lista.remove(passageiro) && !fila.isEmpty()) {
+            Passageiro passageiroFila = fila.remove(0);
+            passageiroFila.setPoltrona(passageiro.getPoltrona());
+            lista.add(passageiroFila);
+            poltronas[poltronaToIndex(passageiro.getPoltrona())] = passageiroFila;
         }
+    }
+
+    public void salvar() {
+        File file = new File(nome+".txt");
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            FileWriter fw = new FileWriter(nome+".txt");
+            BufferedWriter writer = new BufferedWriter(fw);
+            List<String> arquivo = new ArrayList<>();
+            arquivo.addAll(
+                    lista.stream().map(Passageiro::toCSV).collect(Collectors.toList())
+            );
+            arquivo.addAll(
+                    fila.stream().map(Passageiro::toCSV).collect(Collectors.toList())
+            );
+
+            writer.write(String.join("\n", arquivo));
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public String getHorario() {
+        return horario;
     }
 
     private static void setPassagemCounter(int n) {
         passagemCounter = n;
+    }
+
+    private void carregar() {
+        File file = new File(nome+".txt");
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            FileReader fr = new FileReader(nome+".txt");
+            BufferedReader reader = new BufferedReader(fr);
+            List<Passageiro> arquivo = reader.lines().map(Passageiro::new).collect(Collectors.toList());
+            arquivo.stream()
+                    .max(Comparator.comparing(Passageiro::getPassagem)).ifPresent(maior -> setPassagemCounter(maior.getPassagem() + 1));
+
+            arquivo.forEach(p -> {
+                        if (p.getPoltrona().equals("Espera")) {
+                            fila.add(p);
+                        } else {
+                            lista.add(p);
+                            poltronas[poltronaToIndex(p.getPoltrona())] = p;
+                        }
+                    });
+            reader.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }

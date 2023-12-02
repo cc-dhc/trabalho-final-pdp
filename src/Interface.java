@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Interface {
     public static void menuVoo() {
         String menu = "[1] BH-RIO\n" +
@@ -10,6 +12,7 @@ public class Interface {
     }
 
     public static void menuPrincipal(Voo voo) {
+        // todo
         String menu = "[1] Mostrar Lista de Passageiros\n" +
                       "[2] Pesquisar Passageiro por CPF\n" +
                       "[3] Pesquisar Passageiro por Nome\n" +

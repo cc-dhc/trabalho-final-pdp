@@ -3,14 +3,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Passageiro {
-    private final String cpf;
-    private final String nome;
-    private final String endereco;
-    private final String telefone;
-    private final int passagem;
+    private String cpf;
+    private String nome;
+    private String endereco;
+    private String telefone;
+    private int passagem;
     private String poltrona;
-    private final String voo;
-    private final String horario;
+    private String voo;
+    private String horario;
+
+    public int getPassagem() {
+        return passagem;
+    }
 
     public Passageiro(String cpf, String nome, String endereco, String telefone,
                       int passagem, String poltrona, String voo, String horario) {
@@ -25,6 +29,7 @@ public class Passageiro {
     }
 
     public Passageiro(String csv) {
+        // todo: Transfoma uma string no formato do txt em um passageiro
         List<String> data = Arrays.stream(csv.trim().split(", ")).collect(Collectors.toList());
         data = data.stream()
                 .map(s -> {
@@ -44,21 +49,6 @@ public class Passageiro {
         this.horario = data.get(7);
     }
 
-    public String toCSV() {
-        return "\""+cpf+"\", \""+nome+"\", \""+endereco+"\", \""+telefone+"\", "+passagem+", \""+poltrona+"\", \""+voo+"\", \""+horario+"\"";
-    }
-
-    public String mostrar() {
-        return "CPF: " + cpf + "\t\t" +
-                "Nome: " + nome + "\t\t" +
-                "Passagem: " + passagem + "\t\t" +
-                "Poltrona: " + poltrona;
-    }
-
-    public int getPassagem() {
-        return passagem;
-    }
-
     public String getCpf() {
         return cpf;
     }
@@ -73,5 +63,17 @@ public class Passageiro {
 
     public void setPoltrona(String poltrona) {
         this.poltrona = poltrona;
+    }
+
+    public String toCSV() {
+        // todo: "0123456789", "Zé Ninguém", "Rua abc", "+5531988888088", 123123, "01A", "BH-RJ", "15:35"
+    return "\""+cpf+"\", \""+nome+"\", \""+endereco+"\", \""+telefone+"\", "+passagem+", \""+poltrona+"\", \""+voo+"\", \""+horario+"\"";
+    }
+
+    public String mostrar() {
+        return "CPF: " + cpf + "\t\t" +
+            "Nome: " + nome + "\t\t" +
+            "Passagem: " + passagem + "\t\t" +
+            "Poltrona: " + poltrona;
     }
 }
